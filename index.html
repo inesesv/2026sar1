@@ -73,23 +73,6 @@
             font-size: 14px;
         }
 
-        .file-upload-label {
-            background-color: #475569;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .file-upload-label input[type="file"] {
-            display: none;
-        }
-
         .page-tabs {
             display: flex;
             gap: 6px;
@@ -272,13 +255,8 @@
     </div>
 
     <div class="add-worker-form">
-        <input type="text" id="newWorkerName" placeholder="Ievadiet darbinieka vārdu...">
+        <input type="text" id="newWorkerName" placeholder="Ievadiet papildu darbinieka vārdu...">
         <button class="action-btn" onclick="addWorker()">Pievienot darbinieku</button>
-        
-        <label class="file-upload-label">
-            📁 Ielādēt vards.txt
-            <input type="file" id="fileInput" accept=".txt" onchange="loadWorkersFromFile(event)">
-        </label>
     </div>
 
     <div class="page-tabs" id="pageTabs"></div>
@@ -329,7 +307,8 @@
         currentPageId: 1
     };
 
-    function loadState() {
+    // Galvenā ielādes funkcija, kas vispirms mēģina automātiski nolasīt vards.txt
+    async function loadApp() {
         const saved = localStorage.getItem('worker_app_state_v3');
         if (saved) {
             try {
@@ -340,16 +319,48 @@
         } else {
             initDefaultState();
         }
+
+        // Automātiski nolasām vards.txt no tās pašas mapes
+        await fetchWorkersFromFile();
         render();
+    }
+
+    // Funkcija, kas ar fetch nolasa vards.txt no tās pašas mapes
+    async function fetchWorkersFromFile() {
+        try {
+            const response = await fetch('vards.txt');
+            if (!response.ok) return;
+
+            const text = await response.text();
+            const lines = text.split(/\r\n|\r|\n/);
+
+            // Jaunais darbinieku masīvs no faila
+            const fileWorkers = [];
+            let idCounter = 1;
+
+            lines.forEach(line => {
+                const trimmedName = line.trim();
+                if (trimmedName) {
+                    fileWorkers.push({
+                        id: idCounter++,
+                        name: trimmedName
+                    });
+                }
+            });
+
+            // Ja no faila veiksmīgi nolasīti vārdi, atjaunojam sarakstu
+            if (fileWorkers.length > 0) {
+                state.workers = fileWorkers;
+                saveState();
+            }
+        } catch (error) {
+            console.log("Neizdevās automātiski nolasīt vards.txt (piemēram, ja lapa atvērta bez vietējā servera):", error);
+        }
     }
 
     function initDefaultState() {
         state = {
-            workers: [
-                { id: 1, name: '1. Edgars Dārznieks' },
-                { id: 2, name: '2. Uģis Sprincis' },
-                { id: 3, name: '3. Vladimirs osmanovs' }
-            ],
+            workers: [],
             pages: [
                 { id: 1, name: '1. lapa', votes: {} }
             ],
@@ -474,41 +485,6 @@
         render();
     }
 
-    // Funkcija darbinieku ielādei no vards.txt faila
-    function loadWorkersFromFile(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const content = e.target.result;
-            
-            // Sadalām tekstu pa rindiņām (\r\n, \r vai \n)
-            const lines = content.split(/\r\n|\r|\n/);
-            
-            // Attīram esošo sarakstu pirms faila ielādes
-            state.workers = [];
-            
-            let idCounter = 1;
-            lines.forEach(line => {
-                const trimmedName = line.trim();
-                if (trimmedName) {
-                    state.workers.push({
-                        id: idCounter++,
-                        name: trimmedName
-                    });
-                }
-            });
-
-            saveState();
-            render();
-            event.target.value = '';
-        };
-
-        // Ielādējam tekstu ar UTF-8 kodējumu latviešu burtiem
-        reader.readAsText(file, 'UTF-8');
-    }
-
     function createNewPage() {
         const newPageId = Date.now();
         const pageNumber = state.pages.length + 1;
@@ -526,7 +502,7 @@
         if (confirm("Vai tiešām vēlaties dzēst visus datus un sākt no jauna?")) {
             localStorage.removeItem('worker_app_state_v3');
             initDefaultState();
-            render();
+            fetchWorkersFromFile().then(() => render());
         }
     }
 
@@ -544,7 +520,7 @@
         window.print();
     }
 
-    window.onload = loadState;
+    window.onload = loadApp;
 </script>
 
 </body>
