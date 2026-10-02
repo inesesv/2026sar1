@@ -271,7 +271,6 @@
         <button class="action-btn danger" onclick="resetAllData()">Atiestatīt visus datus</button>
     </div>
 
-    <!-- Pievienošanas forma ar faila ielādes iespēju -->
     <div class="add-worker-form">
         <input type="text" id="newWorkerName" placeholder="Ievadiet darbinieka vārdu...">
         <button class="action-btn" onclick="addWorker()">Pievienot darbinieku</button>
@@ -483,15 +482,19 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             const content = e.target.result;
-            // Sadalām saturu pa rindiņām
-            const lines = content.split(/\r?\n/);
             
+            // Sadalām tekstu pa rindiņām (\r\n, \r vai \n)
+            const lines = content.split(/\r\n|\r|\n/);
+            
+            // Attīram esošo sarakstu pirms faila ielādes
+            state.workers = [];
+            
+            let idCounter = 1;
             lines.forEach(line => {
                 const trimmedName = line.trim();
                 if (trimmedName) {
-                    // Pievienojam darbinieku, ja rindiņa nav tukša
                     state.workers.push({
-                        id: Date.now() + Math.random(),
+                        id: idCounter++,
                         name: trimmedName
                     });
                 }
@@ -499,11 +502,11 @@
 
             saveState();
             render();
-            // Notīram pievienoto failu, lai varētu ielādēt atkārtoti
             event.target.value = '';
         };
 
-        reader.readAsText(file);
+        // Ielādējam tekstu ar UTF-8 kodējumu latviešu burtiem
+        reader.readAsText(file, 'UTF-8');
     }
 
     function createNewPage() {
