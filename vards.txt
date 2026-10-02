@@ -1,15 +1,15 @@
-Edgars Dārznieks
-Uģis Sprincis
-Vladimirs Osmanovs
-Artūrs Stepčenko
-Silvija Šimfa
-Evija Kurzemniece
-Sanita Petere
-Maira Markuševska
-Aivars Gulbis
-Dainis Dreimanis
-Kalvis Kaugars
-Svetlana Jakovicka
-Ģirts Bikse
-Grigorijs Katkovs
-Andris Petrovs
+1. Edgars Dārznieks
+2. Uģis Sprincis
+3. Vladimirs Osmanovs
+4. Artūrs Stepčenko
+5. Silvija Šimfa
+6. Evija Kurzemniece
+7. Sanita Petere
+8. Maira Markuševska
+9. Aivars Gulbis
+10. Dainis Dreimanis
+11. Kalvis Kaugars
+12. Svetlana Jakovicka
+13. Ģirts Bikse
+14. Grigorijs Katkovs
+15. Andris Petrovs
